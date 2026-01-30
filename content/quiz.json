@@ -1,0 +1,22 @@
+{
+  "id": "quiz-caching",
+  "conceptId": "caching-basics",
+  "questions": [
+    {
+      "id": "q1",
+      "text": "What is a common downside of cache-aside?",
+      "options": [
+        { "id": "a", "text": "Cache stampede under load", "correct": true },
+        { "id": "b", "text": "Higher latency", "correct": false }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "Where is TTL typically enforced?",
+      "options": [
+        { "id": "a", "text": "At the cache layer", "correct": true },
+        { "id": "b", "text": "At the database", "correct": false }
+      ]
+    }
+  ]
+}

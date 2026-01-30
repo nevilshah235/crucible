@@ -1,0 +1,11 @@
+{
+  "entries": [
+    {
+      "id": "f1",
+      "tags": ["caching", "failure"],
+      "keywords": ["stampede", "thundering herd", "expiry"],
+      "fact": "When many requests miss the cache at once (e.g. after TTL expiry), all hit the backend. This can cause a spike or outage.",
+      "promptHint": "Challenge the user about what happens when the cache expires for a hot key."
+    }
+  ]
+}

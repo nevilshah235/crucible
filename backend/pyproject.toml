@@ -1,0 +1,11 @@
+[project]
+name = "crucible-backend"
+version = "0.1.0"
+description = "FastAPI backend for Crucible"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "google-generativeai>=0.3.0",
+    "python-dotenv>=1.0.0",
+]

@@ -1,0 +1,13 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+.env
+.env.*
+!**/.env.example
+
+# Node (if you want frontend build artifacts ignored)
+node_modules/
+.next/

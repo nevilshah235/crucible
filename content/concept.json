@@ -1,0 +1,6 @@
+{
+  "id": "caching-basics",
+  "title": "Caching basics",
+  "body": "Caching stores copies of data in a faster layer so repeated reads are cheaper. Key tradeoffs: consistency (stale vs fresh), eviction (what to drop when full), and placement (client, server, distributed).",
+  "tags": ["caching", "latency", "consistency"]
+}
