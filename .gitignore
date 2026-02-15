@@ -11,3 +11,8 @@ __pycache__/
 # Node (if you want frontend build artifacts ignored)
 node_modules/
 .next/
+
+# Local / runtime data (LightRAG vector/graph storage)
+lightrag_data/
+
+.cursor/

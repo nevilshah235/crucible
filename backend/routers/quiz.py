@@ -1,35 +1,40 @@
-import json
-from pathlib import Path
+"""Quiz API: submit quiz answers and get score/results (legacy: first quiz by default track)."""
 
-from fastapi import APIRouter
+from typing import Annotated
 
-from config import CONTENT_DIR
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+
+from db import get_db
+from repositories import QuizRepository
+from schemas.requests import QuizSubmitRequest
+from schemas.responses import QuizSubmitResponse, QuizSubmitResultItem
 
 router = APIRouter()
 
 
-def _load_quiz() -> dict:
-    path = CONTENT_DIR / "quiz.json"
-    return json.loads(path.read_text())
-
-
-@router.post("/submit")
-def submit_quiz(body: dict):
-    answers = body.get("answers", [])
-    quiz = _load_quiz()
-    questions_by_id = {q["id"]: q for q in quiz["questions"]}
-    results = []
+@router.post("/submit", response_model=QuizSubmitResponse)
+def submit_quiz(body: QuizSubmitRequest, db: Annotated[Session, Depends(get_db)]):
+    """Submit quiz answers; return score, total, and per-question correctness."""
+    answers = body.answers
+    quiz_repo = QuizRepository(db)
+    quiz_row = quiz_repo.get_first_for_default_track()
+    if not quiz_row:
+        raise HTTPException(status_code=404, detail="No quiz found. Run seed or publish curriculum.")
+    questions = quiz_row.questions or []
+    questions_by_id = {q["id"]: q for q in questions}
+    results: list[QuizSubmitResultItem] = []
     score = 0
     for ans in answers:
-        qid = ans.get("questionId")
-        selected = ans.get("selectedOptionId")
-        q = questions_by_id.get(qid)
+        qid = ans.question_id
+        selected = ans.selected_option_id
+        q = questions_by_id.get(qid) if qid else None
         correct = False
         if q:
-            for opt in q["options"]:
-                if opt["id"] == selected and opt.get("correct"):
+            for opt in q.get("options") or []:
+                if opt.get("id") == selected and opt.get("correct"):
                     correct = True
                     score += 1
                     break
-        results.append({"questionId": qid, "correct": correct})
-    return {"score": score, "total": len(quiz["questions"]), "results": results}
+        results.append(QuizSubmitResultItem(questionId=qid, correct=correct))
+    return QuizSubmitResponse(score=score, total=len(questions), results=results)

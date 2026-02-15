@@ -1,32 +1,23 @@
-import json
-from pathlib import Path
+"""Failure hints for the coach: from DB (failure_facts by concept_id).
 
-from config import CONTENT_DIR
+Replaces JSON-based get_failures. Used by coach to build RAG snippet for LLM prompt.
+"""
+
+from sqlalchemy.orm import Session
+
+from repositories import FailureFactRepository
 
 
-def get_failures(topic: str | None, keywords: list[str] | None = None, limit: int = 2) -> list[dict]:
-    path = CONTENT_DIR / "rag" / "failures.json"
-    if not path.exists():
-        return []
-    data = json.loads(path.read_text())
-    entries = data.get("entries", [])
-    if not topic and not keywords:
-        return entries[:limit]
-    topic_lower = (topic or "").lower()
-    keywords_lower = [k.lower() for k in (keywords or [])]
-    scored = []
-    for e in entries:
-        tags = [t.lower() for t in e.get("tags", [])]
-        kws = [k.lower() for k in e.get("keywords", [])]
-        score = 0
-        if topic_lower and topic_lower in tags:
-            score += 2
-        if topic_lower and any(topic_lower in kw for kw in kws):
-            score += 1
-        for kw in keywords_lower:
-            if kw in tags or any(kw in k for k in kws):
-                score += 1
-        if score > 0:
-            scored.append((score, e))
-    scored.sort(key=lambda x: -x[0])
-    return [e for _, e in scored[:limit]]
+def get_failure_facts(db: Session, concept_id: str | None, limit: int = 2) -> list[dict]:
+    """Return failure_facts for coach hints: concept_id match or global (concept_id IS NULL).
+
+    Args:
+        db: SQLAlchemy session.
+        concept_id: Optional concept slug; if set, include facts for this concept or global (NULL).
+        limit: Max number of facts to return.
+
+    Returns:
+        List of dicts with id, tags, keywords, fact, promptHint.
+    """
+    repo = FailureFactRepository(db)
+    return repo.get_failure_facts(concept_id=concept_id, limit=limit)

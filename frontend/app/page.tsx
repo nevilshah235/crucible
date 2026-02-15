@@ -6,8 +6,7 @@ import { CoachReply } from "@/components/CoachReply"
 import { DesignForm } from "@/components/DesignForm"
 import { PressureBlock } from "@/components/PressureBlock"
 import { Quiz } from "@/components/Quiz"
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
+import { apiFetch } from "@/lib/api"
 
 type Concept = { id: string; title: string; body: string; tags?: string[] }
 type QuizData = {
@@ -27,8 +26,8 @@ export default function Home() {
 
   useEffect(() => {
     Promise.all([
-      fetch(`${API_URL}/content/concept`).then((r) => r.json()),
-      fetch(`${API_URL}/content/quiz`).then((r) => r.json()),
+      apiFetch("/content/concept").then((r) => r.json()),
+      apiFetch("/content/quiz").then((r) => r.json()),
     ])
       .then(([c, q]) => {
         setConcept(c)
@@ -40,7 +39,7 @@ export default function Home() {
 
   const handleQuizSubmit = useCallback(
     async (answers: { questionId: string; selectedOptionId: string }[]) => {
-      const res = await fetch(`${API_URL}/quiz/submit`, {
+      const res = await apiFetch("/quiz/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ answers }),
@@ -53,7 +52,7 @@ export default function Home() {
 
   const handleDesignSubmit = useCallback(async (text: string) => {
     setDesignText(text)
-    await fetch(`${API_URL}/design/submit`, {
+    await apiFetch("/design/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ designText: text }),
@@ -62,7 +61,7 @@ export default function Home() {
 
   const handleCoachFeedback = useCallback(
     async (pressureTest = false) => {
-      const res = await fetch(`${API_URL}/coach/feedback`, {
+      const res = await apiFetch("/coach/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -83,7 +82,7 @@ export default function Home() {
   }, [handleCoachFeedback])
 
   if (loading) return <p>Loading...</p>
-  if (error) return <p>Error: {error}. Is the backend running on {API_URL}?</p>
+  if (error) return <p>Error: {error}. Is the backend running?</p>
   if (!concept || !quiz) return <p>Missing content.</p>
 
   return (
