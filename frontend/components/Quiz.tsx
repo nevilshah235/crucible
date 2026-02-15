@@ -15,8 +15,10 @@ export function Quiz({
 }) {
   const [selected, setSelected] = useState<Record<string, string>>({})
 
+  const questions = quiz?.questions ?? []
+
   const handleSubmit = () => {
-    const answers = quiz.questions.map((q) => ({
+    const answers = questions.map((q) => ({
       questionId: q.id,
       selectedOptionId: selected[q.id] ?? "",
     }))
@@ -26,10 +28,10 @@ export function Quiz({
   return (
     <section>
       <h2>Quiz</h2>
-      {quiz.questions.map((q) => (
+      {questions.map((q) => (
         <div key={q.id} style={{ marginBottom: "1rem" }}>
           <p><strong>{q.text}</strong></p>
-          {q.options.map((opt) => (
+          {(q.options ?? []).map((opt) => (
             <label key={opt.id} style={{ display: "block", marginLeft: "1rem" }}>
               <input
                 type="radio"

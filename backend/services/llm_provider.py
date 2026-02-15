@@ -7,10 +7,12 @@ import json
 import re
 from typing import Any, Protocol
 
-import google.generativeai as genai
+from google.genai.types import GenerateContentConfig
 
 from config import GEMINI_API_KEY
-from services.llm import get_gemini_model
+from services.llm import get_gemini_client
+
+GEMINI_MODEL = "gemini-1.5-flash"
 
 
 class LLMProvider(Protocol):
@@ -40,7 +42,7 @@ class LLMProvider(Protocol):
 
 
 class GeminiLLM:
-    """Gemini-backed LLM provider using shared get_gemini_model()."""
+    """Gemini-backed LLM provider using google.genai Client."""
 
     def generate_text(
         self,
@@ -53,10 +55,14 @@ class GeminiLLM:
         """Generate plain text using Gemini."""
         if not GEMINI_API_KEY:
             return "Set GEMINI_API_KEY to enable the coach."
-        model = get_gemini_model(system_instruction=system_instruction)
-        response = model.generate_content(
-            user_content,
-            generation_config=genai.types.GenerationConfig(
+        client = get_gemini_client()
+        if not client:
+            return "Set GEMINI_API_KEY to enable the coach."
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=user_content,
+            config=GenerateContentConfig(
+                system_instruction=system_instruction,
                 max_output_tokens=max_output_tokens,
                 temperature=temperature,
             ),
@@ -74,10 +80,14 @@ class GeminiLLM:
         temperature: float = 0.3,
     ) -> dict[str, Any]:
         """Generate JSON using Gemini; returns parsed dict."""
-        model = get_gemini_model(system_instruction=system_instruction)
-        response = model.generate_content(
-            user_content,
-            generation_config=genai.types.GenerationConfig(
+        client = get_gemini_client()
+        if not client:
+            raise ValueError("GEMINI_API_KEY is not set")
+        response = client.models.generate_content(
+            model=GEMINI_MODEL,
+            contents=user_content,
+            config=GenerateContentConfig(
+                system_instruction=system_instruction,
                 max_output_tokens=max_output_tokens,
                 temperature=temperature,
                 response_mime_type="application/json",

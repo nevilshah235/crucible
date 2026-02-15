@@ -83,7 +83,7 @@ export default function Home() {
 
   if (loading) return <p>Loading...</p>
   if (error) return <p>Error: {error}. Is the backend running?</p>
-  if (!concept || !quiz) return <p>Missing content.</p>
+  if (!concept || !quiz || !Array.isArray(quiz.questions)) return <p>Missing content.</p>
 
   return (
     <main>

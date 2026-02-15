@@ -1,2 +1,5 @@
 #!/usr/bin/env bash
-cd "$(dirname "$0")/backend" && uv run uvicorn main:app --reload --port 8000
+BACKEND_DIR="$(cd "$(dirname "$0")/backend" && pwd)"
+cd "$BACKEND_DIR"
+# Use absolute path so uvicorn's filter correctly excludes .venv (relative paths don't match path.parents)
+uv run uvicorn main:app --reload --port 8000 --reload-exclude "$BACKEND_DIR/.venv"

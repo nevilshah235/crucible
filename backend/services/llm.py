@@ -1,6 +1,7 @@
 """LLM integration for coach and curriculum using Google Gemini."""
 
-import google.generativeai as genai
+from google import genai
+from google.genai.types import GenerateContentConfig
 
 from config import GEMINI_API_KEY
 
@@ -16,27 +17,20 @@ Rules:
 {rag_snippet}"""
 
 
-def _ensure_configured() -> None:
-    """Configure Gemini API key once (idempotent). No-op if key missing."""
+def _get_client() -> genai.Client | None:
+    """Return configured Gemini client, or None if API key missing."""
     if not GEMINI_API_KEY:
-        return
-    genai.configure(api_key=GEMINI_API_KEY)
+        return None
+    return genai.Client(api_key=GEMINI_API_KEY)
 
 
-def get_gemini_model(system_instruction: str | None = None):
-    """Return a Gemini model; configures API key if not already set.
-
-    Args:
-        system_instruction: Optional system prompt for the model.
+def get_gemini_client() -> genai.Client | None:
+    """Return a configured Gemini client for generate_content calls.
 
     Returns:
-        google.generativeai.GenerativeModel instance.
+        google.genai.Client instance, or None if GEMINI_API_KEY is not set.
     """
-    _ensure_configured()
-    return genai.GenerativeModel(
-        "gemini-1.5-flash",
-        system_instruction=system_instruction or "",
-    )
+    return _get_client()
 
 
 def generate_coach_feedback(
